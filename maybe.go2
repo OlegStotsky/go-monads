@@ -1,0 +1,88 @@
+package go_monads
+
+import (
+	"errors"
+)
+
+type Maybe(type U) interface {
+	IsPresent() bool
+	Filter(p Predicate(U)) Maybe(U)
+	OrElse(other U) U
+	Get() (U, error)
+}
+
+type Just(type U) struct {
+	obj U
+}
+
+type Nothing(type U) struct {
+}
+
+func Of(type U)(x U) Maybe(U) {
+	return Just(U){ obj: x }
+}
+
+func OfNullable(type U)(x *U) Maybe(U) {
+	if x == nil {
+		return Nothing(U){}
+	}
+
+	return Just(U){ obj: *x }
+}
+
+func Empty(type U)() Maybe(U) {
+	return Nothing(U){}
+}
+
+func (j Just(U)) IsPresent() bool {
+	return true
+}
+
+func (n Nothing(U)) IsPresent() bool {
+	return false
+}
+
+func (j Just(U)) Filter(p Predicate(U)) Maybe(U) {
+	if p(j.obj) {
+		return j
+	}
+	return Nothing(U){}
+}
+
+func (n Nothing(U)) Filter(p Predicate(U)) Maybe(U) {
+	return n
+}
+
+func (j Just(U)) OrElse(other U) U {
+	return j.obj
+}
+
+func (n Nothing(U)) OrElse(other U) U {
+	return other
+}
+
+func (j Just(U)) Get() (U, error) {
+	return j.obj, nil
+}
+
+var NoElementError = errors.New("Trying to get from Nothing")
+
+func (n Nothing(U)) Get() (U, error) {
+	return *new(U), NoElementError
+}
+
+func Map(type U, V)(m Maybe(U), f Func(U, V)) Maybe(V) {
+	switch m.(type) {
+	case Just(U):
+		return Just(V) {obj: f(m.(Just(U)).obj) }
+	}
+	return Nothing(V){}
+}
+
+func FlatMap(type U, V)(m Maybe(U), f Func(U, Maybe(V))) Maybe(V) {
+	switch m.(type) {
+	case Just(U):
+		return f(m.(Just(U)).obj)
+	}
+	return Nothing(V){}
+}
