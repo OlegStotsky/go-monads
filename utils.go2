@@ -2,3 +2,4 @@ package go_monads
 
 type Func(type U, V) func(U) V
 type Predicate(type U) func(U) bool
+type Any interface{}
