@@ -1,0 +1,70 @@
+package go_monads
+
+
+type Either(type L, R) interface {
+
+}
+
+type Right(type R) struct {
+	obj R
+}
+
+type Left(type L) struct {
+	obj L
+}
+
+type Func(type U, V) func(U) V
+
+func AsRight(type R)(x R) Either(Any, R) {
+	return Right(R){ obj: x }
+}
+
+func AsLeft(type L)(x L) Either(L, Any) {
+	return Left(L){ obj: x }
+}
+
+
+func Map(type L, R, V)(e Either(L, R), f Func(R, V)) Either(L, V) {
+	switch e.(type) {
+	case Right(R):
+		return Right(V) {obj: f(e.(Right(R)).obj) }
+	}
+	return e
+}
+
+func FlatMap(type L, R, V)(e Either(L, R), f Func(R, Either(L, V))) Either(L, V) {
+	switch e.(type) {
+	case Right(R):
+		return f(e.(Right(R)).obj)
+	}
+	return e
+}
+
+
+
+
+func OrElse (type L, R) (e Either(L, R), other R) R {
+	switch e.(type) {
+	case Right(R):
+		return e.(Right(R)).obj
+	}
+	return other
+}
+
+
+
+func Swap (type L, R) (e Either(L, R)) Either(R, L) {
+	switch e.(type) {
+	case Right(R):
+		return AsLeft(e.(Right(R)).obj)
+	}
+	return AsRight(e.(Left(L)).obj)
+}
+func ToMaybe (type L, R) (e Either(L, R)) Maybe(R) {
+	switch e.(type) {
+	case Right(R):
+		return Of(e.(Right(R)).obj)
+	}
+	return Nothing(R){}
+
+}
