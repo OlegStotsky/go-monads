@@ -4,3 +4,5 @@ type Func(type U, V) func(U) V
 type Func0(type V) func() V
 type Predicate(type U) func(U) bool
 type Any interface{}
+type Unit struct{}
+var UnitVar = struct{}{}

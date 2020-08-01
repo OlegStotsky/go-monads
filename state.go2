@@ -1,1 +1,42 @@
 package go_monads
+
+type State(type S, A) interface {
+    RunState(S) (A, S)
+}
+
+type StateImpl(type S, A) struct {
+    f func(S) (A, S)
+}
+
+func (s StateImpl(S, A)) RunState(state S) (A, S) {
+   return s.f(state)
+}
+
+func Return(type S, A)(x A) State(S, A){
+     return StateImpl(S, A){f: func(s S) (A, S) { return x, s }}
+}
+
+func Map(type S, A, B)(s State(S, A), mapF Func(A, B)) State(S, B) {
+     return StateImpl(S, B){f: func(state S) (B, S) {
+	a, newState := s.RunState(state)
+	return mapF(a), newState
+ }}
+}
+
+func FlatMap(type S, A, B)(s State(S, A), mapF Func(A, State(S, B))) State(S, B) {
+     return StateImpl(S, B){f: func(state S) (B, S) {
+	a, newState := s.RunState(state)
+	result := mapF(a)
+	return result.RunState(newState)
+ }}
+}
+
+func Get(type S)() State(S, S) {
+     return StateImpl(S, S){f: func(state S) (S, S) {
+         return state, state
+     }}
+}
+
+func Put(type S, A)(newState S) State(S, Unit){
+     return StateImpl(S, Unit){f: func(S) (Unit, S) { return struct{}{}, newState }}
+}

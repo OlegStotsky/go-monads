@@ -13,7 +13,6 @@ type Left(type L) struct {
 	obj L
 }
 
-type Func(type U, V) func(U) V
 
 func AsRight(type R)(x R) Either(Any, R) {
 	return Right(R){ obj: x }
