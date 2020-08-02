@@ -6,7 +6,7 @@ go-monads is a library that implements basic Haskell monads, based on Go 2 Gener
 * [Maybe(T)](#maybet)
 * [IO(T)](#iot)
 * [Either(L, R)](#eitherl-r)
-* [State(S, A)]()
+* [State(S, A)](#states-a)
 
 
 ## Maybe(T)
