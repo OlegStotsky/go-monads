@@ -34,6 +34,10 @@ func divideBy(x int, y int) Maybe(int) {
   }
   return Return(int)(x/y)
 }
-four := Map(int, int)(divideBy(6, 3), func (x int) { return x * 2 }) //four equals Just{obj: 4}
-nothing := Map(int, int)(divideBy(6, 0), func (x int) { return x * 2 }) //nothing equals Nothing{}
+four := Map(int, int)(divideBy(6, 3), func (x int) int { return x * 2 }) //four equals Just{obj: 4}
+nothing := Map(int, int)(divideBy(6, 0), func (x int) int { return x * 2 }) //nothing equals Nothing{}
+
+or
+
+FlatMap(divideBy(6, x), func (x int) { return divideBy(x, y) }) //x, y are some unknown integers, might be zeros
 ```
