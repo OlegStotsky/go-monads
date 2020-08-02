@@ -26,7 +26,7 @@ func Map(type S, A, B)(s State(S, A), mapF Func(A, B)) State(S, B) {
     return StateImpl(S, B){f: func(state S) (B, S) {
 	    a, newState := s.RunState(state)
 	    return mapF(a), newState
- }}
+    }}
 }
 
 //Apply given function to result of handling given state and produce new state
@@ -35,7 +35,7 @@ func FlatMap(type S, A, B)(s State(S, A), mapF Func(A, State(S, B))) State(S, B)
 	    a, newState := s.RunState(state)
 	    result := mapF(a)
 	    return result.RunState(newState)
- }}
+     }}
 }
 
 //Give state as value of State
@@ -55,5 +55,5 @@ func bindI(type S, A, B)(s State(S, A), s2 State(S, B)) State(S, B) {
      return stateImpl(S, B){f: func(state S) (B, S) {
 	     _, newState := s.RunState(state)
 	     return s2.RunState(newState)
- }}
+     }}
 }
