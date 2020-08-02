@@ -1,25 +1,25 @@
 package go_monads
 
 type IO(type U) interface {
-  unsafePerformIO() U
+  UnsafePerformIO() U
 }
 
-type IOImpl(type U) struct {
+type ioImpl(type U) struct {
   unsafeRun Func0(U)
 }
 
-func (i IOImpl(U)) unsafePerformIO() U {
+func (i ioImpl(U)) UnsafePerformIO() U {
   return i.unsafeRun()
 }
 
-func Delay(type U)(f Func0(U)) IO(U) {
-  return IOImpl(U){ unsafeRun: f }
+func Return(type U)(f Func0(U)) IO(U) {
+  return ioImpl(U){ unsafeRun: f }
 }
 
 func Map(type U, V)(m IO(U), f Func(U, V)) IO(V) {
-  return IOImpl(V){ unsafeRun: func() V { return f(m.unsafePerformIO()) } }
+  return ioImpl(V){ unsafeRun: func() V { return f(m.UnsafePerformIO()) } }
 }
 
 func FlatMap(type U, V)(m IO(U), f Func(U, IO(V))) IO(V) {
-  return f(m.unsafePerformIO())
+  return f(m.UnsafePerformIO())
 }
