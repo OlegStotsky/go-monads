@@ -1,27 +1,38 @@
+//package go_monads provides standard haskell monads, using go2 generics draft
 package go_monads
 
 import (
 	"errors"
 )
 
+//Maybe represents type that can either have value or be empty
+//IsPresent tells whether instance holds value, in which case it returns true.
+//Filter returns this Maybe if it's not empty and satisfies predicate. Otherwise it returns Nothing
+//OrElse returns this Maybe if it's not empty, otherwise it returns other
+//Get returns value of this Maybe, or error
 type Maybe(type U) interface {
-	IsPresent() bool
+	IsPresent() bool //
 	Filter(p Predicate(U)) Maybe(U)
 	OrElse(other U) U
 	Get() (U, error)
 }
 
+//Just represents non empty case of Maybe
 type Just(type U) struct {
 	obj U
 }
 
+//Nothing represents empty case of Maybe
 type Nothing(type U) struct {
 }
 
-func Of(type U)(x U) Maybe(U) {
+//Return creates Maybe from value
+func Return(type U)(x U) Maybe(U) {
 	return Just(U){ obj: x }
 }
 
+//OfNullable creates Maybe from value that can be nil
+//In case of nil it creates Nothing
 func OfNullable(type U)(x *U) Maybe(U) {
 	if x == nil {
 		return Nothing(U){}
@@ -30,6 +41,7 @@ func OfNullable(type U)(x *U) Maybe(U) {
 	return Just(U){ obj: *x }
 }
 
+//Empty creates Nothing
 func Empty(type U)() Maybe(U) {
 	return Nothing(U){}
 }
@@ -49,6 +61,7 @@ func (j Just(U)) Filter(p Predicate(U)) Maybe(U) {
 	return Nothing(U){}
 }
 
+//Filter on Nothing returns Nothing
 func (n Nothing(U)) Filter(p Predicate(U)) Maybe(U) {
 	return n
 }
@@ -71,6 +84,7 @@ func (n Nothing(U)) Get() (U, error) {
 	return *new(U), NoElementError
 }
 
+//Returns Just containing the result of applying f to m if it's non empty. Otherwise returns Nothing
 func Map(type U, V)(m Maybe(U), f Func(U, V)) Maybe(V) {
 	switch m.(type) {
 	case Just(U):
@@ -79,6 +93,7 @@ func Map(type U, V)(m Maybe(U), f Func(U, V)) Maybe(V) {
 	return Nothing(V){}
 }
 
+//Same as Map but function must return Maybe
 func FlatMap(type U, V)(m Maybe(U), f Func(U, Maybe(V))) Maybe(V) {
 	switch m.(type) {
 	case Just(U):
