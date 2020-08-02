@@ -71,3 +71,42 @@ func main() {
   FlatMap(countNumberOfBytesInFile(), printVal).UnsafePerformIO() 
 }
 ```
+
+
+## Either(L, R)
+
+### Example of usage
+For example, we want to check contains 'go' substring in given file
+
+Some helper functions
+```
+func toString(b []byte) string {
+    return string(b)
+}
+
+func contains(text string) bool {
+    return strings.Contains(text, "go")
+}
+```
+
+Standard way
+```
+func ContainsGo(reader io.Reader) (bool, error) {
+    bytes, err:= ioutil.ReadAll(reader)
+    if err != nil {
+    return false, err
+    }
+    text := toString(bytes)
+    return contains(text), nil
+}
+```
+ReadAllE - function that call ReaderAll and wrap result to Either
+```
+func ReadAllE(reader io.Reader) Either(error, []byte) 
+```
+Generic way
+```
+func ContainsGoE(reader io.Reader) Either(error, bool) {
+    return Map(error, string, bool)(Map(error, []byte, string)(ReadAllE(reader), toString), contains)	
+}
+```
