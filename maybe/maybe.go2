@@ -1,8 +1,8 @@
-//package go_monads provides standard haskell monads, using go2 generics draft
-package go_monads
+package maybe
 
 import (
 	"errors"
+	"github.com/olegstotsky/go-monads"
 )
 
 //Maybe represents type that can either have value or be empty

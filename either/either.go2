@@ -1,4 +1,6 @@
-package go_monads
+package either
+
+import "github.com/olegstotsky/go-monads"
 
 //Either represents value that can be one of two type
 type Either(type L, R) interface {
