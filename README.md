@@ -5,6 +5,7 @@ go-monads is a library that implements basic Haskell monads, based on Go 2 Gener
 
 * [Maybe(T)](#maybet)
 * [IO(T)](#iot)
+* [Either(L, R)](#eitherl-r)
 
 
 ## Maybe(T)
@@ -72,11 +73,10 @@ func main() {
 }
 ```
 
-
 ## Either(L, R)
-
+Either represents value that can be of one of two types
 ### Example of usage
-For example, we want to check contains 'go' substring in given file
+For example, we want to check whether file contains substring 'go'
 
 Some helper functions
 ```
