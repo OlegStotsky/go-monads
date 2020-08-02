@@ -2,7 +2,7 @@ package either
 
 import "github.com/olegstotsky/go-monads"
 
-//Either represents value that can be one of two type
+//Either represents value that can be of one of two types
 type Either(type L, R) interface {
 
 }
@@ -17,17 +17,17 @@ type Left(type L) struct {
 	obj L
 }
 
-//AsRight create Right with any value
+//AsRight creates Right with given value
 func AsRight(type R)(x R) Either(Any, R) {
 	return Right(R){ obj: x }
 }
 
-//AsLeft create Left with any value
+//AsLeft create Left with given value
 func AsLeft(type L)(x L) Either(L, Any) {
 	return Left(L){ obj: x }
 }
 
-//Return Right containing the result of applying f to m if it's non a Left. Otherwise returns unchanged Left
+//Return Right containing the result of applying f to m if it's not Left. Otherwise returns unchanged Left
 func Map(type L, R, V)(e Either(L, R), f Func(R, V)) Either(L, V) {
 	switch e.(type) {
 	case Right(R):
@@ -36,7 +36,7 @@ func Map(type L, R, V)(e Either(L, R), f Func(R, V)) Either(L, V) {
 	return e
 }
 
-//If this is Right return result of applying f. Otherwise returns unchanged Left
+//If this is Right returns result of applying f. Otherwise returns unchanged Left
 func FlatMap(type L, R, V)(e Either(L, R), f Func(R, Either(L, V))) Either(L, V) {
 	switch e.(type) {
 	case Right(R):
@@ -46,7 +46,7 @@ func FlatMap(type L, R, V)(e Either(L, R), f Func(R, Either(L, V))) Either(L, V)
 }
 
 
-//Return contained value if this is Right. Otherwise return given value
+//Returns contained value if this is Right. Otherwise returns given value
 func OrElse(type L, R) (e Either(L, R), other R) R {
 	switch e.(type) {
 	case Right(R):
@@ -55,7 +55,7 @@ func OrElse(type L, R) (e Either(L, R), other R) R {
 	return other
 }
 
-//If this is Right return Left with same value or vice versa
+//If this is Right returns Left with same value or vice versa
 func Swap(type L, R) (e Either(L, R)) Either(R, L) {
 	switch e.(type) {
 	case Right(R):
