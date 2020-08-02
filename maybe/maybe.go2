@@ -2,7 +2,7 @@ package maybe
 
 import (
 	"errors"
-	"github.com/olegstotsky/go-monads"
+	. "github.com/olegstotsky/go-monads"
 )
 
 //Maybe represents type that can either have value or be empty

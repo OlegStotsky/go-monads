@@ -1,6 +1,6 @@
 package io
 
-import "github.com/olegstotsky/go-monads"
+import . "github.com/olegstotsky/go-monads"
 
 //IO encodes computation that potentially contains side effects as pure value
 //UnsafePerformIO runs computation. Should only be called in main function

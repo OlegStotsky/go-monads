@@ -1,6 +1,6 @@
 package either
 
-import "github.com/olegstotsky/go-monads"
+import . "github.com/olegstotsky/go-monads"
 
 //Either represents value that can be of one of two types
 type Either(type L, R) interface {
@@ -71,5 +71,4 @@ func ToMaybe (type L, R) (e Either(L, R)) Maybe(R) {
 		return Of(e.(Right(R)).obj)
 	}
 	return Nothing(R){}
-
 }

@@ -1,6 +1,6 @@
 package state
 
-import "github.com/olegstotsky/go-monads"
+import . "github.com/olegstotsky/go-monads"
 
 //Represent function func (S) (A, S), where S is state, A is result
 //RunState run state function with given state
