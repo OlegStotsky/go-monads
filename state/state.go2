@@ -46,7 +46,7 @@ func Get(type S)() State(S, S) {
 }
 
 //Put new state to State
-func Put(type S, A)(newState S) State(S, Unit){
+func Put(type S)(newState S) State(S, Unit){
      return stateImpl(S, Unit){f: func(S) (Unit, S) { return struct{}{}, newState }}
 }
 
