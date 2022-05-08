@@ -91,8 +91,10 @@ Either represents value that can be of one of two types
 
 ### Create Either
 ```go
-x := either.AsRight(int)(5)
-y := either.AsLeft(string)("xyz")
+x := either.AsRight(5)
+y := either.AsLeft("xyz")
+fmt.Println(either.ToMaybe(x).Get()) // prints 5, nil
+fmt.Println(either.ToMaybe(y).Get()) // prints <nil> Trying to get from Nothing
 ```
 
 ### Example of usage
@@ -122,12 +124,15 @@ func ContainsGo(reader io.Reader) (bool, error) {
 ```
 ReadAllE - function that call ReaderAll and wrap result to Either
 ```go
-func ReadAllE(reader io.Reader) Either(error, []byte) 
+func ReadAllE(reader io.Reader) either.Either[error, []byte] {
+	x := either.FromErrorable[[]byte](ioutil.ReadAll(reader))
+	return x
+}
 ```
 Generic way
 ```go
-func ContainsGoE(reader io.Reader) Either(error, bool) {
-    return either.Map(error, string, bool)(either.Map(error, []byte, string)(ReadAllE(reader), toString), contains)	
+func ContainsGoE(reader io.Reader) either.Either[error, bool] {
+    return either.Map(either.Map(ReadAllE(reader), toString), contains)
 }
 ```
 
