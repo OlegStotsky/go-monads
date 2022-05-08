@@ -3,50 +3,54 @@ go-monads is a library that implements basic Haskell monads, based on Go 2 Gener
 
 ## Table of Contents
 
-* [Maybe(T)](#maybet)
-* [IO(T)](#iot)
-* [Either(L, R)](#eitherl-r)
-* [State(S, A)](#states-a)
+* [Maybe[T]](#maybet)
+* [IO[T]](#iot)
+* [Either[L, R]](#eitherl-r)
+* [State[S, A]](#states-a)
 
 
-## Maybe(T)
+## Maybe[T]
 Maybe represents type that can either have value or be empty
 ### Create Maybe
 ```go
-x := maybe.Return(int)(5)
+m1 := maybe.Return(5)
 
 or
 
 val := new(int)
-x := maybe.OfNullable(int)(val)
+m2 := maybe.OfNullable[int](val)
 
 or
 
-x := maybe.Empty(struct{})()
+m3 := maybe.Empty[any]()
 ```
 
 ### Transform Maybe into new value
 ```go
-x := maybe.Return(int)(5)
-fmt.Println(Map(int, string)(x, fmt.Sprint))
+x := maybe.Return[int](5)
+fmt.Println(maybe.Map[int, string](x, strconv.Itoa).Get())
 
 or
 
-func divideBy(x int, y int) Maybe(int) {
-  if y == 0 { 
-    return Empty(int)() 
-  }
-  return Return(int)(x/y)
+
+func divideBy(x int, y int) maybe.Maybe[int] {
+    if y == 0 {
+        return maybe.Empty[int]()
+    }
+    return maybe.Return(x / y)
 }
-four := maybe.Map(int, int)(divideBy(6, 3), func (x int) int { return x * 2 }) //four equals Just{obj: 4}
-nothing := maybe.Map(int, int)(divideBy(6, 0), func (x int) int { return x * 2 }) //nothing equals Nothing{}
+
+four := maybe.Map(divideBy(6, 3), func(x int) int { return x * 2 })    //four equals Just{obj: 4}
+nothing := maybe.Map(divideBy(6, 0), func(x int) int { return x * 2 }) //nothing equals Nothing{}
 
 or
 
-maybe.FlatMap(int, int)(divideBy(6, x), func (x int) { return divideBy(x, y) }) //x, y are some unknown integers, might be zeros
+x := 0
+y := 7
+m5 := maybe.FlatMap[int, int](divideBy(6, x), func(x int) maybe.Maybe[int] { return divideBy(x, y) }) //x, y are some unknown integers, might be zeros
 ```
 
-## IO(T)
+## IO[T]
 IO encodes computation that potentially contains side effects as pure value
 ### Create IO
 ```go
@@ -56,20 +60,29 @@ func countNumberOfBytesInFile(f os.File) int {
   return fi.Size()
 }
 
-x := io.Return(int)(countNumberOfBytesIntFile(someFile))
+f, err := os.CreateTemp("./", "ab*")
+if err != nil {
+    log.Fatalln(err.Error())
+}
+defer os.Remove(f.Name())
+f.WriteString("hello world")
+
+x := io.Return[int64](func() int64 { return countNumberOfBytesInFile(f) })
+fmt.Println(x.UnsafePerformIO())
 ```
 
 ### Transform IO into new value
 ```go
-func printVal(type T)(val T) IO(T) {
-  return Return(int)(func () { 
-   fmt.Println(val)
-   return val
- }) 
+func printVal[T any](val T) io.IO[util.Unit] {
+    return io.Return[util.Unit](func() util.Unit {
+        fmt.Println(val)
+        return util.UnitVar
+    })
 }
 
 func main() {
-  io.FlatMap(int, int)(countNumberOfBytesInFile(), printVal).UnsafePerformIO() 
+    x2 := io.FlatMap(x, printVal[int64])
+    fmt.Println(x2.UnsafePerformIO())
 }
 ```
 
@@ -78,8 +91,10 @@ Either represents value that can be of one of two types
 
 ### Create Either
 ```go
-x := either.AsRight(int)(5)
-y := either.AsLeft(string)("xyz")
+x := either.AsRight(5)
+y := either.AsLeft("xyz")
+fmt.Println(either.ToMaybe(x).Get()) // prints 5, nil
+fmt.Println(either.ToMaybe(y).Get()) // prints <nil> Trying to get from Nothing
 ```
 
 ### Example of usage
@@ -109,12 +124,15 @@ func ContainsGo(reader io.Reader) (bool, error) {
 ```
 ReadAllE - function that call ReaderAll and wrap result to Either
 ```go
-func ReadAllE(reader io.Reader) Either(error, []byte) 
+func ReadAllE(reader io.Reader) either.Either[error, []byte] {
+	x := either.FromErrorable[[]byte](ioutil.ReadAll(reader))
+	return x
+}
 ```
 Generic way
 ```go
-func ContainsGoE(reader io.Reader) Either(error, bool) {
-    return either.Map(error, string, bool)(either.Map(error, []byte, string)(ReadAllE(reader), toString), contains)	
+func ContainsGoE(reader io.Reader) either.Either[error, bool] {
+    return either.Map(either.Map(ReadAllE(reader), toString), contains)
 }
 ```
 
@@ -123,18 +141,23 @@ Represent function func (S) (A, S), where S is state, A is result
 
 ### Create State
 ```go
-x := state.Return(int, string)(5)
-y := state.Put(int)(5)
+x := state.Return[any, int](5)
+y := state.Put(100)
+fmt.Println(x.RunState(nil)) // prints 5
+fmt.Println(y.RunState(6))   // prints 100
 ```
 
 ### Transform State into new value
 ```go
-func CountZeroes(numbs []int) int {
-    counter := state.Put(int)(0)
-    for _, x := range numbs {
-        state := state.bindI(int, Unit, int)(counter, state.Get(int)())
-        counter = state.FlatMap(int, int, int)(state, func(c int) { return state.Put(int)(c + 1) })
+func CountZeroes(ints []int) int {
+    counter := state.Put[int](0)
+    for _, x := range ints {
+        if x == 0 {
+            s := state.BindI[int, util.Unit, int](counter, state.Get[int]())
+            counter = state.FlatMap[int, int, util.Unit](s, func(c int) state.State[int, util.Unit] { return state.Put[int](c + 1) })
+        }
     }
-    return counter.RunState(0)
+    _, s := counter.RunState(0)
+    return s
 }
 ```

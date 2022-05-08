@@ -72,3 +72,11 @@ func ToMaybe[L, R any](e Either[L, R]) maybe.Maybe[R] {
 	}
 	return maybe.Nothing[R]{}
 }
+
+func FromErrorable[R any](r R, err error) Either[error, R] {
+	if err != nil {
+		return AsLeft[error](err)
+	}
+
+	return AsRight[R](r)
+}
