@@ -3,50 +3,54 @@ go-monads is a library that implements basic Haskell monads, based on Go 2 Gener
 
 ## Table of Contents
 
-* [Maybe(T)](#maybet)
-* [IO(T)](#iot)
-* [Either(L, R)](#eitherl-r)
-* [State(S, A)](#states-a)
+* [Maybe[T]](#maybet)
+* [IO[T]](#iot)
+* [Either[L, R]](#eitherl-r)
+* [State[S, A]](#states-a)
 
 
-## Maybe(T)
+## Maybe[T]
 Maybe represents type that can either have value or be empty
 ### Create Maybe
 ```go
-x := maybe.Return(int)(5)
+m1 := maybe.Return(5)
 
 or
 
 val := new(int)
-x := maybe.OfNullable(int)(val)
+m2 := maybe.OfNullable[int](val)
 
 or
 
-x := maybe.Empty(struct{})()
+m3 := maybe.Empty[any]()
 ```
 
 ### Transform Maybe into new value
 ```go
-x := maybe.Return(int)(5)
-fmt.Println(Map(int, string)(x, fmt.Sprint))
+x := maybe.Return[int](5)
+fmt.Println(maybe.Map[int, string](x, strconv.Itoa).Get())
 
 or
 
-func divideBy(x int, y int) Maybe(int) {
-  if y == 0 { 
-    return Empty(int)() 
-  }
-  return Return(int)(x/y)
+
+func divideBy(x int, y int) maybe.Maybe[int] {
+    if y == 0 {
+        return maybe.Empty[int]()
+    }
+    return maybe.Return(x / y)
 }
-four := maybe.Map(int, int)(divideBy(6, 3), func (x int) int { return x * 2 }) //four equals Just{obj: 4}
-nothing := maybe.Map(int, int)(divideBy(6, 0), func (x int) int { return x * 2 }) //nothing equals Nothing{}
+
+four := maybe.Map(divideBy(6, 3), func(x int) int { return x * 2 })    //four equals Just{obj: 4}
+nothing := maybe.Map(divideBy(6, 0), func(x int) int { return x * 2 }) //nothing equals Nothing{}
 
 or
 
-maybe.FlatMap(int, int)(divideBy(6, x), func (x int) { return divideBy(x, y) }) //x, y are some unknown integers, might be zeros
+x := 0
+y := 7
+m5 := maybe.FlatMap[int, int](divideBy(6, x), func(x int) maybe.Maybe[int] { return divideBy(x, y) }) //x, y are some unknown integers, might be zeros
 ```
 
-## IO(T)
+## IO[T]
 IO encodes computation that potentially contains side effects as pure value
 ### Create IO
 ```go
@@ -61,7 +65,7 @@ x := io.Return(int)(countNumberOfBytesIntFile(someFile))
 
 ### Transform IO into new value
 ```go
-func printVal(type T)(val T) IO(T) {
+func printVal(type T)(val T) IO[T] {
   return Return(int)(func () { 
    fmt.Println(val)
    return val
