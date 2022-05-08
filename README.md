@@ -60,20 +60,29 @@ func countNumberOfBytesInFile(f os.File) int {
   return fi.Size()
 }
 
-x := io.Return(int)(countNumberOfBytesIntFile(someFile))
+f, err := os.CreateTemp("./", "ab*")
+if err != nil {
+    log.Fatalln(err.Error())
+}
+defer os.Remove(f.Name())
+f.WriteString("hello world")
+
+x := io.Return[int64](func() int64 { return countNumberOfBytesInFile(f) })
+fmt.Println(x.UnsafePerformIO())
 ```
 
 ### Transform IO into new value
 ```go
-func printVal(type T)(val T) IO[T] {
-  return Return(int)(func () { 
-   fmt.Println(val)
-   return val
- }) 
+func printVal[T any](val T) io.IO[util.Unit] {
+    return io.Return[util.Unit](func() util.Unit {
+        fmt.Println(val)
+        return util.UnitVar
+    })
 }
 
 func main() {
-  io.FlatMap(int, int)(countNumberOfBytesInFile(), printVal).UnsafePerformIO() 
+    x2 := io.FlatMap(x, printVal[int64])
+    fmt.Println(x2.UnsafePerformIO())
 }
 ```
 
