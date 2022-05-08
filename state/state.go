@@ -51,7 +51,7 @@ func Put[S any](newState S) State[S, util.Unit] {
 }
 
 //Analogue of flatMap with ignoring value of base State
-func bindI[S, A, B any](s State[S, A], s2 State[S, B]) State[S, B] {
+func BindI[S, A, B any](s State[S, A], s2 State[S, B]) State[S, B] {
 	return stateImpl[S, B]{f: func(state S) (B, S) {
 		_, newState := s.RunState(state)
 		return s2.RunState(newState)

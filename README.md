@@ -141,18 +141,23 @@ Represent function func (S) (A, S), where S is state, A is result
 
 ### Create State
 ```go
-x := state.Return(int, string)(5)
-y := state.Put(int)(5)
+x := state.Return[any, int](5)
+y := state.Put(100)
+fmt.Println(x.RunState(nil)) // prints 5
+fmt.Println(y.RunState(6))   // prints 100
 ```
 
 ### Transform State into new value
 ```go
-func CountZeroes(numbs []int) int {
-    counter := state.Put(int)(0)
-    for _, x := range numbs {
-        state := state.bindI(int, Unit, int)(counter, state.Get(int)())
-        counter = state.FlatMap(int, int, int)(state, func(c int) { return state.Put(int)(c + 1) })
+func CountZeroes(ints []int) int {
+    counter := state.Put[int](0)
+    for _, x := range ints {
+        if x == 0 {
+            s := state.BindI[int, util.Unit, int](counter, state.Get[int]())
+            counter = state.FlatMap[int, int, util.Unit](s, func(c int) state.State[int, util.Unit] { return state.Put[int](c + 1) })
+        }
     }
-    return counter.RunState(0)
+    _, s := counter.RunState(0)
+    return s
 }
 ```
